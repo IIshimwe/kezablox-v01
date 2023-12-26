@@ -1,0 +1,16 @@
+{
+  "name": "kezablox-backend-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "author": "Keza Education Future Lab",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "johnny-five": "^2.1.0",
+    "nodemon": "^3.0.2"
+  }
+}
