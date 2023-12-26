@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import "./App.css";
-import { BlocklyWorkspace } from "react-blockly";
-import "./initContent/content";
+import { useState, useEffect } from 'react';
+import './App.css';
+import { BlocklyWorkspace } from 'react-blockly';
+import './initContent/content';
+import { mapping } from './initContent/constants';
 // import { BlocklyEditor } from "react-blockly";
 // import Blockly from "blockly";
 
@@ -10,14 +11,14 @@ function parseXml(xmlString) {
   var parser = new DOMParser();
 
   // Parse the XML string
-  var xmlDoc = parser.parseFromString(xmlString, "text/xml");
+  var xmlDoc = parser.parseFromString(xmlString, 'text/xml');
 
   // Find all "block" elements and extract the "type" attribute
   var blockTypes = [];
-  var blockElements = xmlDoc.getElementsByTagName("block");
+  var blockElements = xmlDoc.getElementsByTagName('block');
 
   for (var i = 0; i < blockElements.length; i++) {
-    var blockType = blockElements[i].getAttribute("type");
+    var blockType = blockElements[i].getAttribute('type');
     if (blockType) {
       blockTypes.push(blockType);
     }
@@ -28,8 +29,13 @@ function parseXml(xmlString) {
 function App() {
   const INITIAL_XML = '<xml xmlns="http://www.w3.org/1999/xhtml"></xml>';
   const [xml, setXml] = useState(INITIAL_XML);
-  const [tokens, setTokens] = useState();
-  console.log("🚀 ~ file: App.jsx:32 ~ App ~ tokens:", tokens);
+  const [tokens, setTokens] = useState([]);
+  const [setupCode, setSetupCode] = useState();
+  console.log('🚀 ~ file: App.jsx:34 ~ App ~ setupCode:', setupCode);
+  const [loopCode, setLoopCode] = useState();
+  console.log('🚀 ~ file: App.jsx:36 ~ App ~ loopCode:', loopCode);
+
+  console.log('🚀 tokens are:', tokens);
 
   useEffect(() => {
     if (xml) {
@@ -37,56 +43,105 @@ function App() {
       setTokens(values);
     }
   }, [xml]);
+
+  useEffect(() => {
+    let setup = '';
+    let loop = '';
+    mapping.forEach((map) => {
+      tokens.forEach((token) => {
+        if (token === map.name) {
+          setup += map.setup;
+          loop += map.loop;
+        }
+      });
+    });
+
+    setLoopCode(loop);
+    setSetupCode(setup);
+  }, [tokens]);
   // Toolbox categories
   const toolboxCategories = {
-    kind: "categoryToolbox",
+    kind: 'categoryToolbox',
     contents: [
       {
-        kind: "category",
-        name: "Events",
-        colour: "#FD790D",
+        kind: 'category',
+        name: 'Events',
+        colour: '#FD790D',
         contents: [
           {
-            kind: "label",
-            text: "Events",
+            kind: 'label',
+            text: 'Events',
             cssConfig: {
-              container: "events-label",
+              container: 'events-label',
             },
           },
           {
-            kind: "block",
-            type: "start",
+            kind: 'block',
+            type: 'start',
+          },
+          {
+            kind: 'block',
+            type: 'wait',
           },
         ],
       },
 
       {
-        kind: "category",
-        name: "Arduino",
-        colour: "#0FBD8C",
+        kind: 'category',
+        name: 'Arduino',
+        colour: '#0FBD8C',
         contents: [
           {
-            kind: "label",
-            text: "Arduino Uno",
+            kind: 'label',
+            text: 'Arduino Uno',
             cssConfig: {
-              container: "arduino-label",
+              container: 'arduino-label',
             },
           },
           {
-            kind: "block",
-            type: "turn_led_on",
+            kind: 'block',
+            type: 'turn_led_on',
           },
           {
-            kind: "block",
-            type: "turn_led_off",
+            kind: 'block',
+            type: 'turn_led_off',
           },
           {
-            kind: "block",
-            type: "highorlow",
+            kind: 'block',
+            type: 'highorlow',
           },
         ],
       },
     ],
+  };
+
+  const handleUpload = () => {
+    const data = {
+      setupCode,
+      loopCode,
+    };
+
+    const arduinoCode =
+      `void setup(){\n` +
+      setupCode +
+      '}\n' +
+      `void loop() {\n` +
+      loopCode +
+      '}\n';
+    console.log(
+      '🚀 ~ file: App.jsx:125 ~ handleUpload ~ arduinoCode:',
+      arduinoCode
+    );
+    // fetch('http://localhost:3000/upload', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify(data),
+    //   mode: 'cors',
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => console.log(data));
   };
 
   return (
@@ -98,7 +153,7 @@ function App() {
           </a>
           <h2 className="app-title">🅺🅴🆉🅰🅱🅻🅾🆇</h2>
         </div>
-        <a href="#">
+        <a href="#" onClick={handleUpload}>
           <img src="/public/playbutton.png" className="play-button" alt="" />
         </a>
       </div>
@@ -110,7 +165,7 @@ function App() {
           grid: {
             spacing: 20,
             length: 1.3,
-            colour: "#f1f1ff",
+            colour: '#f1f1ff',
             snap: true,
           },
         }}
